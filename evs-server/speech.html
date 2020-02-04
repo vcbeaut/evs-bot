@@ -1,0 +1,67 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<script>
+	var ws;
+    var ingText;
+	var edText;
+	var baseText="";
+	var outputState;
+	function init() {
+		// Connect to Web Socket
+
+		//log.innerHTML = log.innerHTML + "&nbsp;&nbsp;vv;&nbsp;123";
+		ws = new WebSocket("ws://localhost:8020/");
+		
+		// Set event handlers.
+		ws.onopen = function() {
+		output("connect success! please say thing!");
+		log.innerHTML = log.innerHTML + "<br>";
+		};
+		
+		ws.onmessage = function(e) {
+		// e.data contains received string.
+			if(e.data == "ING"){
+				outputState = "recognizing";
+				
+			}
+			else if(e.data == "ED"){
+				outputState = "recognized";
+			}
+			else{
+				//start output
+				if(outputState == "recognizing"){
+					ingText = e.data;
+					//baseText = log.innerHTML;
+					output(baseText + ingText);
+				}
+				else if(outputState == "recognized"){
+					edText = e.data;
+					output(baseText + edText);
+					baseText = baseText + edText;
+				}
+			}
+		
+		};
+		
+		ws.onclose = function() {
+		output("onclose");
+		};
+		
+		ws.onerror = function(e) {
+		output("onerror");
+		console.log(e)
+		};
+	}
+	function output(str) {
+		var log = document.getElementById("log");
+		var escaped = str.replace(/&/, "&amp;").replace(/</, "&lt;").replace(/>/, "&gt;").replace(/"/, "&quot;");
+		log.innerHTML = escaped;
+	}
+
+	</script>
+</head>
+<body onload="init();">
+	<div id="log"></div>
+</body>
+</html>
